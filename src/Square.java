@@ -118,10 +118,6 @@ public class Square {
          */
     }
 
-    public boolean getIsMine() {
-        return isMine;
-    }
-
     public void reveal(){
         isRevealed = true;
         if(isMine) {
@@ -201,6 +197,10 @@ public class Square {
 
     public boolean isFlagged() {
         return isFlagged;
+    }
+
+    public boolean isMine() {
+        return isMine;
     }
 
     public boolean isRevealed() {

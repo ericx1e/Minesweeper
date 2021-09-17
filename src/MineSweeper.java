@@ -1,5 +1,7 @@
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 
@@ -7,19 +9,18 @@ import java.awt.event.MouseListener;
 
 public class MineSweeper extends JPanel {
 
-    private Square[][] board;
+    private static Square[][] board;
     private boolean firstMove = true;
     private boolean gameover = false;
+    private boolean winner = false;
     public static final int SIZE = 30;  //30 is arbitrary. Please adjust to make it look good to you.
     private static final double MINERATE = 0.2;
+    private boolean spacePressed = false;
 
     public MineSweeper(int width, int height) {
         setSize(width, height);
 
-        board = new Square[20][20];  //this is a tad small, feel free to adjust.
-
-        //TODO: go to each spot in the board, and assign a new Square to that spot.
-        //Double for loop time!
+        board = new Square[20][20];
         for (int r = 0; r < board.length; r++) {
             for (int c = 0; c < board[0].length; c++) {
                 boolean isMine = Math.random() < MINERATE;
@@ -28,6 +29,7 @@ public class MineSweeper extends JPanel {
         }
 
         setupMouseListener();
+        setupKeyListener();
     }
 
 
@@ -47,7 +49,12 @@ public class MineSweeper extends JPanel {
         if(gameover) {
             g2.setPaint(Color.RED);
             g.setFont(new Font("Monospaced", Font.BOLD, 70));
-            g2.drawString("GAME OVER", 106, getHeight()/2);
+            if(winner) {
+                g2.drawString("YOU WIN", 144, getHeight()/2);
+
+            } else {
+                g2.drawString("GAME OVER", 106, getHeight()/2);
+            }
         }
     }
 
@@ -72,9 +79,18 @@ public class MineSweeper extends JPanel {
 
                 int r = y / SIZE;
                 int c = x / SIZE;
-                if(e.getButton() == MouseEvent.BUTTON1 && !board[r][c].isFlagged())  {
+                if(e.getButton() == MouseEvent.BUTTON3 || (e.getButton() == MouseEvent.BUTTON1 && spacePressed)) {
+                    if(!board[r][c].isRevealed()) {
+                        board[r][c].toggleFlag();
+                        if(checkWinner()) {
+                            winner = true;
+                            gameover = true;
+                        }
+                    }
+                }
+                else if(e.getButton() == MouseEvent.BUTTON1 && !board[r][c].isFlagged())  {
                     if(firstMove) { //Ensure first move reveals an area
-                        while(board[r][c].getIsMine() || board[r][c].numNeighborMines() > 0) {
+                        while(board[r][c].isMine() || board[r][c].numNeighborMines() > 0) {
                             for (int rr = 0; rr < board.length; rr++) { //Generate new board
                                 for (int cc = 0; cc < board[0].length; cc++) {
                                     boolean isMine = Math.random() < MINERATE;
@@ -92,10 +108,6 @@ public class MineSweeper extends JPanel {
                             board[r][c].reveal();
                         }
                     }
-                }
-                if(e.getButton() == MouseEvent.BUTTON3) {
-                    if(!board[r][c].isRevealed())
-                        board[r][c].toggleFlag();
                 }
 
                 repaint();
@@ -123,6 +135,51 @@ public class MineSweeper extends JPanel {
         });
     }
 
+    private void setupKeyListener() {
+        addKeyListener(new KeyListener() {
+            @Override
+            public void keyTyped(KeyEvent e) {
+                if(e.getKeyChar() == 'r') {
+                    board = new Square[20][20];
+                    for (int r = 0; r < board.length; r++) {
+                        for (int c = 0; c < board[0].length; c++) {
+                            boolean isMine = Math.random() < MINERATE;
+                            board[r][c] = new Square(isMine, r, c, board);
+                        }
+                    }
+                    firstMove = true;
+                    gameover = false;
+                    repaint();
+                }
+            }
+
+            @Override
+            public void keyPressed(KeyEvent e) {
+                if(e.getKeyChar() == ' ') {
+                    spacePressed = true;
+                }
+            }
+
+            @Override
+            public void keyReleased(KeyEvent e) {
+                if(e.getKeyChar() == ' ') {
+                    spacePressed = false;
+                }
+            }
+        });
+    }
+
+    private static boolean checkWinner() {
+        for (int r = 0; r < board.length; r++) {
+            for (int c = 0; c < board[0].length; c++) {
+                if(board[r][c].isMine() && !board[r][c].isFlagged() || !board[r][c].isMine() && board[r][c].isFlagged()) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
     //sets ups the panel and frame.  You can change width and height of the window.
     public static void main(String[] args) {
         JFrame window = new JFrame("Minesweeper");
@@ -138,5 +195,4 @@ public class MineSweeper extends JPanel {
         window.setVisible(true);
         window.setResizable(false);
     }
-
 }
