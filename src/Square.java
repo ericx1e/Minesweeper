@@ -15,6 +15,7 @@ public class Square {
         this.board = board;
         this.isFlagged = false;
         this.gameover = false;
+        
     }
 
     public int numNeighborMines(){

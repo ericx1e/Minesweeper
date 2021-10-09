@@ -50,10 +50,20 @@ public class MineSweeper extends JPanel {
             g2.setPaint(Color.RED);
             g.setFont(new Font("Monospaced", Font.BOLD, 70));
             if(winner) {
+                g2.setPaint(Color.BLUE);
                 g2.drawString("YOU WIN", 144, getHeight()/2);
 
             } else {
+                for (int r = 0; r < board.length; r++) {
+                    for (int c = 0; c < board[0].length; c++) {
+                        if(board[r][c].isMine() && !board[r][c].isFlagged()) {
+                            board[r][c].reveal();
+                        }
+                    }
+                }
+                g2.setPaint(Color.BLUE);
                 g2.drawString("GAME OVER", 106, getHeight()/2);
+                repaint();
             }
         }
     }
@@ -149,6 +159,7 @@ public class MineSweeper extends JPanel {
                     }
                     firstMove = true;
                     gameover = false;
+                    winner = false;
                     repaint();
                 }
             }
