@@ -1,2 +1,2 @@
 # Minesweeper
-Classic Minesweeper written in Java
+⛳️ Classic Minesweeper written in Java
